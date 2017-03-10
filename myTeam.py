@@ -111,15 +111,32 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     features['successorScore'] = self.getScore(successor)
 
     myState = successor.getAgentState(self.index)
-    if self.index < 3:
-      otherState = successor.getAgentState((3-self.index))
+    #print "self index ", self.index
+    if self.index < 2:
+      otherState = successor.getAgentState((2-self.index))
+      enemyState = successor.getAgentState(1)
+      enemy2State = successor.getAgentState(3)
     else:
-      otherState = successor.getAgentState((5-self.index))
+      otherState = successor.getAgentState((4-self.index))
+      enemyState = successor.getAgentState(0)
+      enemy2State = successor.getAgentState(2)
     myPos = myState.getPosition()
+    #print myPos
     otherPos = otherState.getPosition()
-    if otherPos is not None:
+    enemyPos = enemyState.getPosition()
+    enemy2Pos = enemy2State.getPosition()
+    if enemyPos is not None and myPos[0] < 15:
+      enemyVerticalDist = abs(myPos[1] - enemyPos[1])
+      features['enemyDist'] = enemyVerticalDist
+    elif enemy2Pos is not None and myPos[0] < 15:
+      enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
+      features['enemyDist'] = enemyVerticalDist
+
+    if otherPos is not None and myPos[0] >= 15:
       otherDist = abs(myPos[1] - otherPos[1])
       features['otherDist'] = otherDist
+    enemyPos = enemyState.getPosition()
+    #print enemyPos 
     #HEyyooo new code here
     
     enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
@@ -137,13 +154,15 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     if len(foodList) > 0: # This should always be True,  but better safe than sorry
       myPos = successor.getAgentState(self.index).getPosition()
       minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
+
+      features['numFood'] = -len(foodList)
       features['distanceToFood'] = minDistance
       #features['foodLeft'] = foodLeft
     return features
 
   def getWeights(self, gameState, action):
     #                         100                    -1
-    return {'successorScore': 1000, 'distanceToFood': -20, 'invaderDistance': -10, 'otherDist': -5}
+    return {'successorScore': 1000, 'distanceToFood': -1, 'invaderDistance': -5, 'otherDist': -20, 'enemyDist': -5,  'numFood': -31}
 
 class OffensiveReflexAgent2(ReflexCaptureAgent):
   """
@@ -170,6 +189,25 @@ class OffensiveReflexAgent2(ReflexCaptureAgent):
     capsuleList = self.getCapsules(successor)
     #sizeOfCapsuleListNew = len(capsuleList)
     #sizeOfCapsuleListNew = sizeOfCapsuleListOld
+    myState = successor.getAgentState(self.index)
+    if self.index < 3:
+      otherState = successor.getAgentState((2-self.index))
+      enemyState = successor.getAgentState(1)
+      enemy2State = successor.getAgentState(3)
+    else:
+      otherState = successor.getAgentState((4-self.index))
+      enemyState = successor.getAgentState(0)
+      enemy2State = successor.getAgentState(2)
+    myPos = myState.getPosition()
+    otherPos = otherState.getPosition()
+    enemyPos = enemyState.getPosition()
+    enemy2Pos = enemy2State.getPosition()
+    if enemyPos is not None and myPos[0] < 15:
+      enemyVerticalDist = abs(myPos[1] - enemyPos[1])
+      features['enemyDist'] = enemyVerticalDist
+    elif enemy2Pos is not None and myPos[0] < 15:
+      enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
+      features['enemyDist'] = enemyVerticalDist
     if len(foodList) > 0: # This should always be True,  but better safe than sorry
       myPos = successor.getAgentState(self.index).getPosition()
       minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
@@ -177,6 +215,8 @@ class OffensiveReflexAgent2(ReflexCaptureAgent):
       if len(capsuleList) > 0:
         ppDistance = min([self.getMazeDistance(myPos, capsule) for capsule in capsuleList])
       features['distanceToFood'] = minDistance
+      features['numFood'] = -len(foodList)
+
       if self.sizeOfCapsuleListOld > len(capsuleList):
           ppDistance = -100
           self.sizeOfCapsuleListOld = self.sizeOfCapsuleListOld - 1
@@ -186,7 +226,7 @@ class OffensiveReflexAgent2(ReflexCaptureAgent):
 
   def getWeights(self, gameState, action):
     #                         100                    -1
-    return {'successorScore': 100, 'distanceToFood': -1, 'distanceToPowerPellet': -100}
+    return {'successorScore': 100, 'distanceToFood': -10, 'distanceToPowerPellet': -100, 'enemyDist': -1, 'numFood': -31}
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
   """
