@@ -103,33 +103,47 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
   we give you to get an idea of what an offensive agent might look like,
   but it is by no means the best or only way to build an offensive agent.
   """
+
+
   def getFeatures(self, gameState, action):
     features = util.Counter()
     successor = self.getSuccessor(gameState, action)
     features['successorScore'] = self.getScore(successor)
 
+    myState = successor.getAgentState(self.index)
+    if self.index < 3:
+      otherState = successor.getAgentState((3-self.index))
+    else:
+      otherState = successor.getAgentState((5-self.index))
+    myPos = myState.getPosition()
+    otherPos = otherState.getPosition()
+    if otherPos is not None:
+      otherDist = abs(myPos[1] - otherPos[1])
+      features['otherDist'] = otherDist
     #HEyyooo new code here
-    """
+    
     enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
     invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
     features['numInvaders'] = len(invaders)
     if len(invaders) > 0:
       dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
       features['invaderDistance'] = min(dists)
-      """
     #Watch out!!
 
     # Compute distance to the nearest food
     foodList = self.getFood(successor).asList()
+    #foodLeft = len(foodList)
+
     if len(foodList) > 0: # This should always be True,  but better safe than sorry
       myPos = successor.getAgentState(self.index).getPosition()
       minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
       features['distanceToFood'] = minDistance
+      #features['foodLeft'] = foodLeft
     return features
 
   def getWeights(self, gameState, action):
     #                         100                    -1
-    return {'successorScore': 100, 'distanceToFood': -1}
+    return {'successorScore': 1000, 'distanceToFood': -20, 'invaderDistance': -10, 'otherDist': -5}
 
 class OffensiveReflexAgent2(ReflexCaptureAgent):
   """
@@ -137,6 +151,13 @@ class OffensiveReflexAgent2(ReflexCaptureAgent):
   we give you to get an idea of what an offensive agent might look like,
   but it is by no means the best or only way to build an offensive agent.
   """
+  def capsuleLen(self):
+
+    capsuleList = [4, 2, 5, 4] #self.getCapsules(successor)
+    SaveList = len(capsuleList)
+    return SaveList
+
+  #SaveList = capsuleLen()
 
   def getFeatures(self, gameState, action):
     features = util.Counter()
