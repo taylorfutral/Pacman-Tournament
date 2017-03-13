@@ -140,7 +140,11 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     print successor.getAgentState(0)
     print successor.getAgentState(2)
     #print enemyPos
+    enemyVerticalDist = 0
+    features['enemyDist'] = enemyVerticalDist
+
     if self.index%2 == 0:
+      """
       if enemyPos is not None and myPos[0] < 16:
         enemyVerticalDist = abs(myPos[1] - enemyPos[1])
         features['enemyDist'] = enemyVerticalDist
@@ -150,26 +154,55 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
       if otherPos is not None and myPos[0] >= 16:
         otherDist = abs(myPos[1] - otherPos[1])
         features['otherDist'] = otherDist
-      enemyPos = enemyState.getPosition()
+      """
+      #enemyPos = enemyState.getPosition()
+      if enemyPos is not None:
+        if myPos[0] < 16:
+          enemyVerticalDist = abs(myPos[1] - enemyPos[1])
+          features['enemyDist'] = enemyVerticalDist
+        if myPos[0] >= 16:
+          enemyDist = abs(myPos[1] - enemyPos[1]) + abs(myPos[0] - enemyPos[0]) #manhattan distance\
+          features['enemyDist'] = -enemyDist
+      elif enemy2Pos is not None:
+        if myPos[0] < 16:
+          enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
+          features['enemyDist'] = enemyVerticalDist
+        if myPos[0] >= 16:
+          enemy2Dist = abs(myPos[1] - enemy2Pos[1]) + abs(myPos[0] - enemy2Pos[0]) #manhattan distance
+          features['enemyDist'] = -enemy2Dist
+      if otherPos is not None and myPos[0] >= 16:
+        otherDist = abs(myPos[1] - otherPos[1])
+        features['otherDist'] = otherDist
     else:
-      if enemyPos is not None and myPos[0] >= 16:
-        enemyVerticalDist = abs(myPos[1] - enemyPos[1])
-        features['enemyDist'] = enemyVerticalDist
-      elif enemy2Pos is not None and myPos[0] >= 16:
-        enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
-        features['enemyDist'] = enemyVerticalDist
+      if enemyPos is not None:
+        if myPos[0] >= 16:
+          enemyVerticalDist = abs(myPos[1] - enemyPos[1])
+          features['enemyDist'] = enemyVerticalDist
+        if myPos[0] < 16:
+          enemyVerticalDist = abs(myPos[1] - enemyPos[1]) + abs(myPos[0] - enemyPos[0]) #manhattan distance\
+          features['enemyDist'] = -enemyVerticalDist
+      elif enemy2Pos is not None:
+        if myPos[0] >= 16:
+          enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
+          features['enemyDist'] = enemyVerticalDist
+        if myPos[0] < 16:
+          enemy2Dist = abs(myPos[1] - enemy2Pos[1]) + abs(myPos[0] - enemy2Pos[0]) #manhattan distance
+          features['enemyDist'] = -enemy2Dist
       if otherPos is not None and myPos[0] < 16:
         otherDist = abs(myPos[1] - otherPos[1])
         features['otherDist'] = otherDist
+    print features['otherDist'] 
     #print enemyPos 
     #HEyyooo new code here
     
+    """
     enemies = [successor.getAgentState(i) for i in self.getOpponents(successor)]
     invaders = [a for a in enemies if a.isPacman and a.getPosition() != None]
     features['numInvaders'] = len(invaders)
     if len(invaders) > 0:
       dists = [self.getMazeDistance(myPos, a.getPosition()) for a in invaders]
       features['invaderDistance'] = min(dists)
+    """
     #Watch out!!
 
     # Compute distance to the nearest food
@@ -180,14 +213,16 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
       myPos = successor.getAgentState(self.index).getPosition()
       minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
 
-      features['numFood'] = -len(foodList)
+      #features['numFood'] = -len(foodList)
+      features['numFood'] = len(foodList)
+      print minDistance
       features['distanceToFood'] = minDistance
       #features['foodLeft'] = foodLeft
     return features
 
   def getWeights(self, gameState, action):
-    #                         100                    -1
-    return {'successorScore': 1000, 'distanceToFood': -1, 'invaderDistance': -5, 'otherDist': -20, 'enemyDist': -5,  'numFood': -31}
+    #          successorScore 1000                    -1   #invaderDistance: -5           -5              -31
+    return {'distanceToFood': -100, 'otherDist': 99, 'enemyDist': 100,  'numFood': -5000}
 
 class OffensiveReflexAgent2(ReflexCaptureAgent):
   """
@@ -215,6 +250,7 @@ class OffensiveReflexAgent2(ReflexCaptureAgent):
     #sizeOfCapsuleListNew = len(capsuleList)
     #sizeOfCapsuleListNew = sizeOfCapsuleListOld
     myState = successor.getAgentState(self.index)
+    """
     if self.index < 3:
       otherState = successor.getAgentState((2-self.index))
       enemyState = successor.getAgentState(1)
@@ -223,16 +259,74 @@ class OffensiveReflexAgent2(ReflexCaptureAgent):
       otherState = successor.getAgentState((4-self.index))
       enemyState = successor.getAgentState(0)
       enemy2State = successor.getAgentState(2)
+    """
+    if self.index%2 == 0:
+      if self.index == 0:
+        otherState = successor.getAgentState(2)
+      else:
+        otherState = successor.getAgentState(0)
+      enemyState = successor.getAgentState(1)
+      enemy2State = successor.getAgentState(3)
+    else:
+      if self.index == 1:
+        otherState = successor.getAgentState(3)
+      else:
+        otherState = successor.getAgentState(1)
+      enemyState = successor.getAgentState(0)
+      enemy2State = successor.getAgentState(2)
+
     myPos = myState.getPosition()
     otherPos = otherState.getPosition()
     enemyPos = enemyState.getPosition()
     enemy2Pos = enemy2State.getPosition()
+    """
     if enemyPos is not None and myPos[0] < 15:
       enemyVerticalDist = abs(myPos[1] - enemyPos[1])
       features['enemyDist'] = enemyVerticalDist
     elif enemy2Pos is not None and myPos[0] < 15:
       enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
       features['enemyDist'] = enemyVerticalDist
+    """
+    enemyVerticalDist = 0
+    features['enemyDist'] = enemyVerticalDist
+
+    if self.index%2 == 0: 
+      if enemyPos is not None:
+        if myPos[0] < 15:
+          enemyVerticalDist = abs(myPos[1] - enemyPos[1])
+          features['enemyDist'] = enemyVerticalDist
+        if myPos[0] >= 16:
+          enemyDist = abs(myPos[1] - enemyPos[1]) + abs(myPos[0] - enemyPos[0]) #manhattan distance\
+          features['enemyDist'] = -enemyDist*10
+      elif enemy2Pos is not None:
+        if myPos[0] < 16:
+          enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
+          features['enemyDist'] = enemyVerticalDist
+        if myPos[0] >= 16:
+          enemy2Dist = abs(myPos[1] - enemy2Pos[1]) + abs(myPos[0] - enemy2Pos[0]) #manhattan distance
+          features['enemyDist'] = -enemy2Dist*10
+      if otherPos is not None and myPos[0] >= 16:
+        otherDist = abs(myPos[1] - otherPos[1])
+        features['otherDist'] = otherDist
+    else:
+      if enemyPos is not None:
+        if myPos[0] >= 17:
+          enemyVerticalDist = abs(myPos[1] - enemyPos[1])
+          features['enemyDist'] = enemyVerticalDist
+        if myPos[0] < 16:
+          enemyVerticalDist = abs(myPos[1] - enemyPos[1]) + abs(myPos[0] - enemyPos[0]) #manhattan distance\
+          features['enemyDist'] = -enemyVerticalDist*10
+      elif enemy2Pos is not None:
+        if myPos[0] >= 16:
+          enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
+          features['enemyDist'] = enemyVerticalDist
+        if myPos[0] < 16:
+          enemy2Dist = abs(myPos[1] - enemy2Pos[1]) + abs(myPos[0] - enemy2Pos[0]) #manhattan distance
+          features['enemyDist'] = -enemy2Dist*10
+      if otherPos is not None and myPos[0] < 16:
+        otherDist = abs(myPos[1] - otherPos[1])
+        features['otherDist'] = otherDist
+
     if len(foodList) > 0: # This should always be True,  but better safe than sorry
       myPos = successor.getAgentState(self.index).getPosition()
       minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
@@ -240,7 +334,7 @@ class OffensiveReflexAgent2(ReflexCaptureAgent):
       if len(capsuleList) > 0:
         ppDistance = min([self.getMazeDistance(myPos, capsule) for capsule in capsuleList])
       features['distanceToFood'] = minDistance
-      features['numFood'] = -len(foodList)
+      features['numFood'] = len(foodList)
 
       if self.sizeOfCapsuleListOld > len(capsuleList):
           ppDistance = -100
@@ -250,8 +344,8 @@ class OffensiveReflexAgent2(ReflexCaptureAgent):
     return features
 
   def getWeights(self, gameState, action):
-    #                         100                    -1
-    return {'successorScore': 100, 'distanceToFood': -10, 'distanceToPowerPellet': -100, 'enemyDist': -1, 'numFood': -31}
+    #       'successorScore'    10000                    -1
+    return {'distanceToFood': -500, 'distanceToPowerPellet': -1001, 'enemyDist': 1000, 'numFood': -2000}
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
   """
