@@ -112,30 +112,55 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
     myState = successor.getAgentState(self.index)
     #print "self index ", self.index
-    if self.index < 2:
-      otherState = successor.getAgentState((2-self.index))
+    otherState = None
+    enemyState = None
+    enemy2State = None
+    if self.index%2 == 0:
+      if self.index == 0:
+        otherState = successor.getAgentState(2)
+      else:
+        otherState = successor.getAgentState(0)
       enemyState = successor.getAgentState(1)
       enemy2State = successor.getAgentState(3)
     else:
-      otherState = successor.getAgentState((4-self.index))
+      if self.index == 1:
+        otherState = successor.getAgentState(3)
+      else:
+        otherState = successor.getAgentState(1)
       enemyState = successor.getAgentState(0)
       enemy2State = successor.getAgentState(2)
     myPos = myState.getPosition()
-    #print myPos
     otherPos = otherState.getPosition()
     enemyPos = enemyState.getPosition()
     enemy2Pos = enemy2State.getPosition()
-    if enemyPos is not None and myPos[0] < 15:
-      enemyVerticalDist = abs(myPos[1] - enemyPos[1])
-      features['enemyDist'] = enemyVerticalDist
-    elif enemy2Pos is not None and myPos[0] < 15:
-      enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
-      features['enemyDist'] = enemyVerticalDist
-
-    if otherPos is not None and myPos[0] >= 15:
-      otherDist = abs(myPos[1] - otherPos[1])
-      features['otherDist'] = otherDist
-    enemyPos = enemyState.getPosition()
+    print "my Pos " , myPos , " my state " , myState
+    print "other Pos " , otherPos , " other state " , otherState
+    print "enemyPos", enemyPos, "enemyState", enemyState
+    print self.getOpponents(successor)
+    print successor.getAgentState(0)
+    print successor.getAgentState(2)
+    #print enemyPos
+    if self.index%2 == 0:
+      if enemyPos is not None and myPos[0] < 16:
+        enemyVerticalDist = abs(myPos[1] - enemyPos[1])
+        features['enemyDist'] = enemyVerticalDist
+      elif enemy2Pos is not None and myPos[0] < 16:
+        enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
+        features['enemyDist'] = enemyVerticalDist
+      if otherPos is not None and myPos[0] >= 16:
+        otherDist = abs(myPos[1] - otherPos[1])
+        features['otherDist'] = otherDist
+      enemyPos = enemyState.getPosition()
+    else:
+      if enemyPos is not None and myPos[0] >= 16:
+        enemyVerticalDist = abs(myPos[1] - enemyPos[1])
+        features['enemyDist'] = enemyVerticalDist
+      elif enemy2Pos is not None and myPos[0] >= 16:
+        enemyVerticalDist = abs(myPos[1] - enemy2Pos[1])
+        features['enemyDist'] = enemyVerticalDist
+      if otherPos is not None and myPos[0] < 16:
+        otherDist = abs(myPos[1] - otherPos[1])
+        features['otherDist'] = otherDist
     #print enemyPos 
     #HEyyooo new code here
     
